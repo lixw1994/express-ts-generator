@@ -1,0 +1,55 @@
+import * as util from 'util';
+
+export function loadConfig(name: string) {
+    return require(`../../config/${process.env.NODE_ENV || 'development'}/${name}.json`);
+}
+
+export async function sleep(second: number) {
+    return new Promise((any) => {
+        setTimeout(any, second * 1000);
+    });
+}
+
+export async function calcTime(func: Function) {
+    const startTime = Date.now();
+    const res = await func();
+    const endTime = Date.now();
+    return {
+        duration: endTime - startTime,
+        value: res,
+    };
+}
+
+export function repr(o: any): string {
+    return util.inspect(o, { showHidden: false, depth: null });
+}
+
+export enum LogLevel {
+    DEBUG = 1,
+    INFO = 2,
+    WARN = 3,
+    ERROR = 4,
+}
+export function log(level: LogLevel, msg: object | string | number) {
+    const logConfig = loadConfig('log') as { level: LogLevel };
+    if (level < logConfig.level) {
+        return;
+    }
+    const timeStr = new Date().toISOString();
+    switch (level) {
+        case LogLevel.DEBUG:
+            console.debug(`[${timeStr}]['DEBUG'] ${repr(msg)}`);
+            break;
+        case LogLevel.INFO:
+            console.info(`[${timeStr}]['INFO'] ${repr(msg)}`);
+            break;
+        case LogLevel.WARN:
+            console.warn(`[${timeStr}]['WARN'] ${repr(msg)}`);
+            break;
+        case LogLevel.ERROR:
+            console.error(`[${timeStr}]['ERROR'] ${repr(msg)}`);
+            break;
+        default:
+            break;
+    }
+}

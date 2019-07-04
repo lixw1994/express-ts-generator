@@ -1,0 +1,31 @@
+import * as later from 'later';
+
+interface CronJob {
+    schedule: string;       // crontab定时任务
+    job: Function;          // 执行函数
+    args: any[];            // 携带的参数
+}
+
+export function startOnce(cronJob: CronJob) {
+    const {job, schedule, args} = cronJob;
+    later.setTimeout(() => {
+        job(...args);
+    }, later.parse.cron(schedule));
+}
+
+export function start(cronJob: CronJob) {
+    const {job, schedule, args} = cronJob;
+    later.setInterval(() => {
+        job(...args);
+    }, later.parse.cron(schedule));
+}
+
+export function calcEndTime(schedule: string) {
+    const cur = later.schedule(later.parse.cron(schedule)).next(1, new Date(Date.now() + 1000));
+    return Math.floor(Date.parse(cur) / 1000);
+}
+
+export function calcDuration(schedule: string) {
+    const [cur, next] = later.schedule(later.parse.cron(schedule)).next(2, new Date(Date.now() + 1000));
+    return Math.floor((Date.parse(next) - Date.parse(cur)) / 1000);
+}
